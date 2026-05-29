@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1"/>
+<title>Caixa · Lojinha & Grupo</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Mulish:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f0e8;
+  --card:#fffcf5;
+  --border:#e8e0d0;
+  --text:#1a1510;
+  --muted:#9a8f80;
+  --loja:#c0392b;
+  --loja-bg:#fff0ee;
+  --loja-border:#f5c6c2;
+  --grupo:#1a6b3c;
+  --grupo-bg:#eef8f2;
+  --grupo-border:#b8e0c8;
+  --entrada:#1a6b3c;
+  --saida:#c0392b;
+  --shadow:0 2px 16px rgba(0,0,0,0.08);
+}
+body{
+  font-family:'Mulish',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  padding-bottom:100px;
+}
+header{
+  background:var(--text);
+  color:#f5f0e8;
+  padding:20px 20px 16px;
+  position:sticky;top:0;z-index:100;
+}
+header h1{
+  font-family:'Syne',sans-serif;
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:-.5px;
+}
+header p{font-size:11px;opacity:.5;letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+
+/* Tab bar */
+.tabs{
+  display:flex;
+  background:var(--text);
+  padding:0 20px 14px;
+  gap:8px;
+}
+.tab{
+  flex:1;
+  padding:8px 0;
+  border:none;
+  border-radius:6px;
+  font-family:'Syne',sans-serif;
+  font-size:13px;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+  background:rgba(255,255,255,0.1);
+  color:rgba(255,255,255,0.5);
+}
+.tab.active-loja{background:var(--loja);color:#fff;}
+.tab.active-grupo{background:var(--grupo);color:#fff;}
+
+/* Screens */
+.screen{display:none;padding:20px;}
+.screen.active{display:block;}
+
+/* Saldo card */
+.saldo-card{
+  border-radius:12px;
+  padding:24px 20px 20px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow);
+}
+.saldo-card.loja{background:var(--loja-bg);border:1px solid var(--loja-border);}
+.saldo-card.grupo{background:var(--grupo-bg);border:1px solid var(--grupo-border);}
+.saldo-label{font-size:11px;letter-spacing:.15em;text-transform:uppercase;opacity:.6;margin-bottom:6px;}
+.saldo-valor{
+  font-family:'Syne',sans-serif;
+  font-size:38px;
+  font-weight:800;
+  letter-spacing:-1px;
+}
+.saldo-card.loja .saldo-valor{color:var(--loja);}
+.saldo-card.grupo .saldo-valor{color:var(--grupo);}
+.saldo-meta{
+  display:flex;gap:20px;margin-top:14px;
+  padding-top:14px;border-top:1px solid rgba(0,0,0,0.07);
+}
+.saldo-meta-item{flex:1;}
+.saldo-meta-label{font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:2px;}
+.saldo-meta-val{font-size:15px;font-weight:600;}
+.saldo-meta-val.e{color:var(--entrada);}
+.saldo-meta-val.s{color:var(--saida);}
+
+/* Form */
+.form-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:18px;
+  margin-bottom:20px;
+  box-shadow:var(--shadow);
+}
+.form-title{
+  font-family:'Syne',sans-serif;
+  font-size:14px;font-weight:700;
+  margin-bottom:14px;
+}
+.tipo-btns{display:flex;gap:8px;margin-bottom:14px;}
+.tipo-btn{
+  flex:1;padding:10px 0;border:2px solid var(--border);
+  border-radius:8px;background:transparent;
+  font-family:'Mulish',sans-serif;font-size:13px;font-weight:600;
+  cursor:pointer;transition:.15s;color:var(--muted);
+}
+.tipo-btn.sel-entrada{border-color:var(--entrada);background:var(--grupo-bg);color:var(--entrada);}
+.tipo-btn.sel-saida{border-color:var(--saida);background:var(--loja-bg);color:var(--saida);}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:5px;}
+.field input{
+  width:100%;padding:11px 14px;
+  border:1px solid var(--border);border-radius:8px;
+  font-family:'Mulish',sans-serif;font-size:15px;
+  background:var(--bg);color:var(--text);outline:none;
+  transition:.15s;
+}
+.field input:focus{border-color:#999;}
+.btn-add{
+  width:100%;padding:13px;border:none;border-radius:8px;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;transition:.15s;color:#fff;
+  letter-spacing:.02em;
+}
+.btn-add.loja{background:var(--loja);}
+.btn-add.grupo{background:var(--grupo);}
+.btn-add:active{opacity:.85;transform:scale(.98);}
+
+/* Lista */
+.lista-titulo{
+  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;
+  opacity:.4;margin-bottom:12px;
+}
+.item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  animation:slideIn .25s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.item-icon{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.item-icon.e{background:var(--grupo-bg);}
+.item-icon.s{background:var(--loja-bg);}
+.item-info{flex:1;min-width:0;}
+.item-desc{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.item-date{font-size:11px;opacity:.45;margin-top:2px;}
+.item-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;flex-shrink:0;}
+.item-val.e{color:var(--entrada);}
+.item-val.s{color:var(--saida);}
+.item-del{
+  background:none;border:none;cursor:pointer;
+  font-size:16px;opacity:.25;padding:4px;
+  transition:.15s;flex-shrink:0;
+}
+.item-del:hover{opacity:.7;}
+.empty{text-align:center;padding:32px 0;opacity:.35;font-size:13px;}
+
+/* Bottom nav hint */
+.bottom-hint{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--card);border-top:1px solid var(--border);
+  padding:10px 20px 14px;
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;color:var(--muted);
+}
+.bottom-hint span{letter-spacing:.05em;}
+.btn-limpar{
+  background:none;border:1px solid var(--border);
+  border-radius:6px;padding:5px 12px;
+  font-family:'Mulish',sans-serif;font-size:11px;
+  color:var(--muted);cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Caixa</h1>
+  <p>Lojinha &amp; Grupo</p>
+</header>
+
+<div class="tabs">
+  <button class="tab active-loja" onclick="switchTab('loja')">🏪 Lojinha</button>
+  <button class="tab" onclick="switchTab('grupo')">👥 Grupo</button>
+</div>
+
+<!-- LOJINHA -->
+<div class="screen active" id="screen-loja">
+  <div class="saldo-card loja">
+    <div class="saldo-label">Saldo · Lojinha</div>
+    <div class="saldo-valor" id="saldo-loja">R$ 0,00</div>
+    <div class="saldo-meta">
+      <div class="saldo-meta-item">
+        <div class="saldo-meta-label">Entradas</div>
+        <div class="saldo-meta-val e" id="total-e-loja">R$ 0,00</div>
+      </div>
+      <div class="saldo-meta-item">
+        <div class="saldo-meta-label">Saídas</div>
+        <div class="saldo-meta-val s" id="total-s-loja">R$ 0,00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Registrar</div>
+    <div class="tipo-btns">
+      <button class="tipo-btn sel-entrada" id="btn-e-loja" onclick="setTipo('loja','entrada')">↑ Entrada</button>
+      <button class="tipo-btn" id="btn-s-loja" onclick="setTipo('loja','saida')">↓ Saída</button>
+    </div>
+    <div class="field">
+      <label>Descrição</label>
+      <input type="text" id="desc-loja" placeholder="Ex: venda de blusa"/>
+    </div>
+    <div class="field">
+      <label>Valor (R$)</label>
+      <input type="number" id="val-loja" placeholder="0,00" min="0" step="0.01"/>
+    </div>
+    <button class="btn-add loja" onclick="adicionar('loja')">Adicionar</button>
+  </div>
+
+  <div class="lista-titulo">Histórico</div>
+  <div id="lista-loja"><div class="empty">Nenhum registro ainda</div></div>
+</div>
+
+<!-- GRUPO -->
+<div class="screen" id="screen-grupo">
+  <div class="saldo-card grupo">
+    <div class="saldo-label">Saldo · Grupo</div>
+    <div class="saldo-valor" id="saldo-grupo">R$ 0,00</div>
+    <div class="saldo-meta">
+      <div class="saldo-meta-item">
+        <div class="saldo-meta-label">Entradas</div>
+        <div class="saldo-meta-val e" id="total-e-grupo">R$ 0,00</div>
+      </div>
+      <div class="saldo-meta-item">
+        <div class="saldo-meta-label">Saídas</div>
+        <div class="saldo-meta-val s" id="total-s-grupo">R$ 0,00</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-title">Registrar</div>
+    <div class="tipo-btns">
+      <button class="tipo-btn sel-entrada" id="btn-e-grupo" onclick="setTipo('grupo','entrada')">↑ Entrada</button>
+      <button class="tipo-btn" id="btn-s-grupo" onclick="setTipo('grupo','saida')">↓ Saída</button>
+    </div>
+    <div class="field">
+      <label>Descrição</label>
+      <input type="text" id="desc-grupo" placeholder="Ex: mensalidade"/>
+    </div>
+    <div class="field">
+      <label>Valor (R$)</label>
+      <input type="number" id="val-grupo" placeholder="0,00" min="0" step="0.01"/>
+    </div>
+    <button class="btn-add grupo" onclick="adicionar('grupo')">Adicionar</button>
+  </div>
+
+  <div class="lista-titulo">Histórico</div>
+  <div id="lista-grupo"><div class="empty">Nenhum registro ainda</div></div>
+</div>
+
+<div class="bottom-hint">
+  <span>Dados salvos no dispositivo</span>
+  <button class="btn-limpar" onclick="limparTudo()">Limpar tudo</button>
+</div>
+
+<script>
+// Estado
+const estado = {
+  loja: { tipo: 'entrada', registros: [] },
+  grupo: { tipo: 'entrada', registros: [] }
+};
+
+// Carregar do localStorage
+function carregar() {
+  const d = localStorage.getItem('caixa-app-v1');
+  if (d) {
+    const parsed = JSON.parse(d);
+    estado.loja.registros = parsed.loja || [];
+    estado.grupo.registros = parsed.grupo || [];
+  }
+}
+
+function salvar() {
+  localStorage.setItem('caixa-app-v1', JSON.stringify({
+    loja: estado.loja.registros,
+    grupo: estado.grupo.registros
+  }));
+}
+
+// Tab
+let tabAtiva = 'loja';
+function switchTab(conta) {
+  tabAtiva = conta;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + conta).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t => {
+    t.className = 'tab';
+  });
+  const tabs = document.querySelectorAll('.tab');
+  if (conta === 'loja') tabs[0].className = 'tab active-loja';
+  else tabs[1].className = 'tab active-grupo';
+}
+
+// Tipo entrada/saída
+function setTipo(conta, tipo) {
+  estado[conta].tipo = tipo;
+  const be = document.getElementById('btn-e-' + conta);
+  const bs = document.getElementById('btn-s-' + conta);
+  be.className = 'tipo-btn' + (tipo === 'entrada' ? ' sel-entrada' : '');
+  bs.className = 'tipo-btn' + (tipo === 'saida' ? ' sel-saida' : '');
+}
+
+// Formatar moeda
+function fmt(v) {
+  return 'R$ ' + Math.abs(v).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+// Adicionar registro
+function adicionar(conta) {
+  const desc = document.getElementById('desc-' + conta).value.trim();
+  const val = parseFloat(document.getElementById('val-' + conta).value);
+  if (!desc || isNaN(val) || val <= 0) {
+    alert('Preencha a descrição e o valor.');
+    return;
+  }
+  const tipo = estado[conta].tipo;
+  const agora = new Date();
+  estado[conta].registros.unshift({
+    id: Date.now(),
+    tipo,
+    desc,
+    val,
+    data: agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})
+  });
+  document.getElementById('desc-' + conta).value = '';
+  document.getElementById('val-' + conta).value = '';
+  salvar();
+  renderizar(conta);
+}
+
+// Deletar
+function deletar(conta, id) {
+  estado[conta].registros = estado[conta].registros.filter(r => r.id !== id);
+  salvar();
+  renderizar(conta);
+}
+
+// Renderizar lista e saldos
+function renderizar(conta) {
+  const regs = estado[conta].registros;
+  let totalE = 0, totalS = 0;
+  regs.forEach(r => {
+    if (r.tipo === 'entrada') totalE += r.val;
+    else totalS += r.val;
+  });
+  const saldo = totalE - totalS;
+
+  document.getElementById('saldo-' + conta).textContent = fmt(saldo);
+  document.getElementById('total-e-' + conta).textContent = fmt(totalE);
+  document.getElementById('total-s-' + conta).textContent = fmt(totalS);
+
+  const lista = document.getElementById('lista-' + conta);
+  if (regs.length === 0) {
+    lista.innerHTML = '<div class="empty">Nenhum registro ainda</div>';
+    return;
+  }
+  lista.innerHTML = regs.map(r => `
+    <div class="item">
+      <div class="item-icon ${r.tipo === 'entrada' ? 'e' : 's'}">
+        ${r.tipo === 'entrada' ? '↑' : '↓'}
+      </div>
+      <div class="item-info">
+        <div class="item-desc">${r.desc}</div>
+        <div class="item-date">${r.data}</div>
+      </div>
+      <div class="item-val ${r.tipo === 'entrada' ? 'e' : 's'}">
+        ${r.tipo === 'saida' ? '−' : '+'}${fmt(r.val)}
+      </div>
+      <button class="item-del" onclick="deletar('${conta}',${r.id})" title="Remover">✕</button>
+    </div>
+  `).join('');
+}
+
+function limparTudo() {
+  if (!confirm('Apagar todos os registros de Lojinha e Grupo?')) return;
+  estado.loja.registros = [];
+  estado.grupo.registros = [];
+  salvar();
+  renderizar('loja');
+  renderizar('grupo');
+}
+
+// Init
+carregar();
+renderizar('loja');
+renderizar('grupo');
+</script>
+</body>
+</html>
